@@ -33,6 +33,12 @@ window.CP = {
   orgNames() { return this.lines.map(l => l.org); },
   lineNames() { return this.lines.map(l => l.line); },
   pick(arr, i) { return arr[i % arr.length]; },
+  /* 평가 지표 관리에서 만든 연도별 지표 (브라우저 저장, 예시). 운영평가 관리, 입력 화면이 같은 값을 읽음. 그 연도 지표가 없으면 기본 지표 */
+  indKey: 'cpprms_eval_ind_v1',
+  indAll() { try { return JSON.parse(localStorage.getItem(this.indKey) || '{}'); } catch (e) { return {}; } },
+  indSave(o) { try { localStorage.setItem(this.indKey, JSON.stringify(o)); } catch (e) { /* 저장 불가 시 이 화면에서만 유지 */ } },
+  indFor(type, year) { return (this.indAll()[type] || []).find(v => v.yr === +year) || null; },
+  evalDefFor(type, year) { const v = this.indFor(type, year); return v ? v.data.map(g => ({ g: g.g, items: g.items })) : this.evalDef[type]; },
   /* 날짜 예시: 기준일 2026-11-03 에서 n일 전 */
   day(n, t) {
     const dt = new Date(2026, 10, 3); dt.setDate(dt.getDate() - n);
