@@ -39,6 +39,37 @@ window.CP = {
   indSave(o) { try { localStorage.setItem(this.indKey, JSON.stringify(o)); } catch (e) { /* 저장 불가 시 이 화면에서만 유지 */ } },
   indFor(type, year) { return (this.indAll()[type] || []).find(v => v.yr === +year) || null; },
   evalDefFor(type, year) { const v = this.indFor(type, year); return v ? v.data.map(g => ({ g: g.g, items: g.items })) : this.evalDef[type]; },
+  /* 지표 이름: 평가 지표 관리에서 바꾼 이름, 없으면 "2027년 BTL 지표" */
+  indName(type, year) { const v = this.indFor(type, year); return v && v.name ? v.name : year + '년 ' + type + ' 지표'; },
+  /* 환산 계산식 (v1.3, 2026-11-05): 연도 지표마다 저장. 정량은 식, 정성은 등급별 비율 */
+  calcVars: ['소계', '만점', '가점', '배점'],
+  calcDefault() { return { q: '소계 / 만점 * 배점', cap: true, items: {}, grade: [1, 0.8, 0.6, 0.4, 0.2] }; },
+  calcFor(type, year) { const v = this.indFor(type, year); return Object.assign(this.calcDefault(), (v && v.calc) || {}); },
+  /* 식 계산: 숫자, 위 4개 값, + - * / 괄호, 작은값(a, b), 큰값(a, b), 반올림(값, 자리수)만 허용 (eval 쓰지 않음) */
+  calcRun(expr, vars) {
+    const s = String(expr || ''), F = { 작은값: Math.min, 큰값: Math.max, 반올림: (x, n) => { const p = Math.pow(10, n || 0); return Math.round(x * p) / p; } };
+    let i = 0;
+    const sp = () => { while (/\s/.test(s[i] || '')) i++; };
+    const fail = m => { throw new Error(m); };
+    function prim() {
+      sp(); const c = s[i];
+      if (c === '(') { i++; const v = add(); sp(); if (s[i] !== ')') fail('괄호가 닫히지 않음'); i++; return v; }
+      if (c === '-') { i++; return -prim(); }
+      const num = /^\d+(\.\d+)?/.exec(s.slice(i)); if (num) { i += num[0].length; return +num[0]; }
+      const w = /^[가-힣A-Za-z_]+/.exec(s.slice(i)); if (!w) fail(c ? '"' + c + '"은(는) 쓸 수 없음' : '식이 끝나지 않음');
+      i += w[0].length; sp();
+      if (F[w[0]]) { if (s[i] !== '(') fail(w[0] + ' 뒤에 괄호 필요'); i++; const a = [add()]; sp(); while (s[i] === ',') { i++; a.push(add()); sp(); } if (s[i] !== ')') fail('괄호가 닫히지 않음'); i++; return F[w[0]].apply(null, a); }
+      if (!(w[0] in vars)) fail('"' + w[0] + '"은(는) 없는 값');
+      return +vars[w[0]] || 0;
+    }
+    function mul() { let v = prim(); for (;;) { sp(); const c = s[i]; if (c !== '*' && c !== '/') return v; i++; const r = prim(); v = c === '*' ? v * r : (r === 0 ? 0 : v / r); } }
+    function add() { let v = mul(); for (;;) { sp(); const c = s[i]; if (c !== '+' && c !== '-') return v; i++; const r = mul(); v = c === '+' ? v + r : v - r; } }
+    if (!s.trim()) fail('식이 비어 있음');
+    const v = add(); sp(); if (i < s.length) fail('"' + s.slice(i, i + 6) + '" 부분을 읽을 수 없음');
+    if (!isFinite(v)) fail('계산 결과가 숫자가 아님');
+    return v;
+  },
+  calcCheck(expr) { try { this.calcRun(expr, { 소계: 80, 만점: 100, 가점: 1, 배점: 10 }); return ''; } catch (e) { return e.message; } },
   /* 날짜 예시: 기준일 2026-11-03 에서 n일 전 */
   day(n, t) {
     const dt = new Date(2026, 10, 3); dt.setDate(dt.getDate() - n);
