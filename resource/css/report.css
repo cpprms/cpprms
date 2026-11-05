@@ -72,10 +72,10 @@
   tbody tr:hover td{background:#fafbfd}
   td.zero{color:var(--gray)}
   .badge-na{font-size:11px;color:var(--gray);border:1px solid var(--line2);border-radius:4px;padding:0 5px}
-  /* 일괄 설정 창 */
+  /* 항목 필터 창 (공통 ui.css 의 .mask.on z-index 50 보다 위) */
   .mask{position:fixed;inset:0;background:rgba(15,25,40,.4);display:none;z-index:40}
   .mask.on{display:block}
-  .pop{position:fixed;top:90px;left:50%;transform:translateX(-50%);width:440px;background:#fff;border-radius:10px;box-shadow:0 20px 50px rgba(5,12,25,.35);z-index:41;display:none;overflow:hidden}
+  .pop{position:fixed;top:90px;left:50%;transform:translateX(-50%);width:440px;background:#fff;border-radius:10px;box-shadow:0 20px 50px rgba(5,12,25,.35);z-index:60;display:none;overflow:hidden}
   .pop.on{display:block}
   .pop .ph{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
   .pop .ph b{font-size:16px;font-weight:800}

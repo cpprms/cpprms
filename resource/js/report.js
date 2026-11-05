@@ -142,7 +142,7 @@ function draw(){
   renderKpis();
 }
 
-/* ===== 일괄 설정 ===== */
+/* ===== 항목 필터 ===== */
 function buildPop(){
   const ds=DSS[CUR]; const box=$('datacols');
   let h='<h4>시설 항목</h4>';
@@ -152,7 +152,7 @@ function buildPop(){
 }
 function openPop(){buildPop();$('mask').classList.add('on');$('pop').classList.add('on');}
 function closePop(){$('mask').classList.remove('on');$('pop').classList.remove('on');}
-function applyPop(){draw();closePop();tst('컬럼 구성 적용');}
+function applyPop(){draw();closePop();tst('항목 필터 적용');}
 function resetCols(){DSS[CUR].cols.forEach(c=>c.on=true); showLine=true; buildPop(); tst('기본값으로 초기화');}
 
 /* ===== 레포트 출력 ===== */
@@ -247,7 +247,7 @@ function savePdf(){
   if(!window.html2pdf){ try{ window.print(); }catch(e){ tst('PDF 저장이 차단된 환경, 브라우저에서 열기 필요'); } return; }
   tst('PDF 생성 중');
   html2pdf().set({ margin:6, filename:fname, image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,backgroundColor:'#ffffff'},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, pagebreak:{mode:['css','legacy']} }).from(src).save()
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, pagebreak:{mode:[]} }).from(src).toContainer().then(function(){ if(window.PDF_FIT) PDF_FIT(this.prop.container, this.prop.pageSize.inner.px.height); }).save()
     .then(()=>tst('PDF 파일 내려받기 완료 / 발주처 양식'))
     .catch(()=>{ try{ window.print(); }catch(e){ tst('PDF 저장이 차단된 환경, 브라우저에서 열기 필요'); } });
 }

@@ -313,14 +313,14 @@ function renderRpt(){
   $('rPeriod').textContent=RV==='월별' ? qLabel()+' (집계 '+aggN()+'개월)' : ry[0]+'년 ~ '+ry[ry.length-1]+'년';
   $('rCount').textContent=ST.length;
   const on=onG();
-  if(!on.length){ $('rpt').innerHTML='<tbody><tr><td class="nodata">표시할 항목 없음, 일괄 설정에서 항목 선택 필요</td></tr></tbody>'; return; }
+  if(!on.length){ $('rpt').innerHTML='<tbody><tr><td class="nodata">표시할 항목 없음, 항목 필터에서 항목 선택 필요</td></tr></tbody>'; return; }
   let h='<thead><tr><th class="fx" rowspan="2">역명</th>'+on.map(x=>'<th colspan="2">'+x.g.k+'</th>').join('')+'</tr><tr>'+on.map(()=>'<th>승차</th><th>하차</th>').join('')+'</tr></thead><tbody>';
   h+='<tr class="tot"><td class="fx">합계</td>'+on.map(x=>'<td class="num">'+fmtC(cellTot(x.gi,0))+'</td><td class="num">'+fmtC(cellTot(x.gi,1))+'</td>').join('')+'</tr>';
   ST.forEach(s=>{ h+='<tr><td class="fx">'+esc(s.nm)+'</td>'+on.map(x=>'<td class="num">'+fmtC(cell(s,x.gi,0))+'</td><td class="num">'+fmtC(cell(s,x.gi,1))+'</td>').join('')+'</tr>'; });
   $('rpt').innerHTML=h+'</tbody>';
 }
 
-/* 일괄 설정 */
+/* 항목 필터 */
 function openSet(){
   $('setBox').innerHTML='<h4>'+RNAME[RV]+' 항목</h4>'+groups().map((g,gi)=>'<label><input type="checkbox" data-gi="'+gi+'"'+(ON[RV][gi]?' checked':'')+'> '+g.k+'</label>').join('');
   $('mSet').classList.add('on');
@@ -401,7 +401,7 @@ function buildReport(){
     +'<div class="pfoot">본 레포트는 CPPRMS 승하차 데이터 관리의 조회 조건 및 선택 항목 기준으로 출력됨</div>';
 }
 function openReport(){
-  if(!onG().length){ tst('출력할 항목 없음, 일괄 설정에서 항목 선택 필요'); return; }
+  if(!onG().length){ tst('출력할 항목 없음, 항목 필터에서 항목 선택 필요'); return; }
   buildReport(); $('rmask').classList.add('on'); document.body.style.overflow='hidden';
 }
 function closeReport(){ $('rmask').classList.remove('on'); document.body.style.overflow=''; }
@@ -411,7 +411,7 @@ function savePdf(){
   if(!window.html2pdf){ window.print(); return; }
   tst('PDF 생성 중');
   html2pdf().set({margin:6,filename:fname,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#ffffff',scrollX:0,scrollY:0},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}}).from($('paper')).save()
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:[]}}).from($('paper')).toContainer().then(function(){ if(window.PDF_FIT) PDF_FIT(this.prop.container, this.prop.pageSize.inner.px.height); }).save()
     .then(()=>tst('PDF 파일 내려받기 완료')).catch(()=>window.print());
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeM('mSet'); closeReport(); } });
