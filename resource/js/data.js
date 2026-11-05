@@ -43,7 +43,10 @@ window.CP = {
   indName(type, year) { const v = this.indFor(type, year); return v && v.name ? v.name : year + '년 ' + type + ' 지표'; },
   /* 환산 계산식 (v1.3, 2026-11-05): 연도 지표마다 저장. 정량은 식, 정성은 등급별 비율 */
   calcVars: ['소계', '만점', '가점', '배점'],
-  calcDefault() { return { q: '소계 / 만점 * 배점', cap: true, items: {}, grade: [1, 0.8, 0.6, 0.4, 0.2] }; },
+  calcDefault() { return { q: '소계 / 만점 * 배점', cap: true, items: {}, grade: [1, 0.8, 0.6, 0.4, 0.2], desc: {} }; },
+  /* 지표별 평가 방법(산식) 기본값: 2026년 민자철도 운영평가 매뉴얼(안) 기준. 다른 지표는 평가 지표 관리에서 입력 */
+  descDefault: { struct: '평가 기준\n- 「시설물 안전 및 유지관리에 관한 특별법」 시행령 제12조의 3에 의거하여 국토안전관리원에 제출된 유지관리실적을 기반으로 본 운영평가 구조물 유지관리 평가점수(10점 만점) 산정\n- 해당 법률상 구조물: 철도교량, 철도터널, 철도역시설, 철도사면, 철도옹벽\n\n평가 방법\n- 구조물 유지관리 평가점수 = 1종 평가점수(6점) + 2종 평가점수(4점)\n- 1종 평가점수 = (A등급 구조물 개수 × 6 + B등급 구조물 개수 × 4.5 + C등급 구조물 개수 × 3 + D등급 구조물 개수 × 1.5 + E등급 구조물 개수 × 0) / (1종 구조물 총 개수)\n- 2종 평가점수 = (A등급 구조물 개수 × 4 + B등급 구조물 개수 × 3 + C등급 구조물 개수 × 2 + D등급 구조물 개수 × 1 + E등급 구조물 개수 × 0) / (2종 구조물 총 개수)\n- 구조물 유지관리 평가는 총점(10점)을 8점으로 환산하여 적용\n\n증빙 자료\n- 국토안전관리원 시설물통합정보관리시스템(FMS)에 제출된 유지관리실적 결과' },
+  descOf(type, year, k) { const c = this.calcFor(type, year); return c.desc && c.desc[k] != null ? c.desc[k] : (this.descDefault[k] || ''); },
   calcFor(type, year) { const v = this.indFor(type, year); return Object.assign(this.calcDefault(), (v && v.calc) || {}); },
   /* 식 계산: 숫자, 위 4개 값, + - * / 괄호, 작은값(a, b), 큰값(a, b), 반올림(값, 자리수)만 허용 (eval 쓰지 않음) */
   calcRun(expr, vars) {
