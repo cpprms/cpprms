@@ -39,7 +39,7 @@ window.CP = {
   indSave(o) { try { localStorage.setItem(this.indKey, JSON.stringify(o)); } catch (e) { /* 저장 불가 시 이 화면에서만 유지 */ } },
   indFor(type, year) { return (this.indAll()[type] || []).find(v => v.yr === +year) || null; },
   evalDefFor(type, year) { const v = this.indFor(type, year); return v ? v.data.map(g => ({ g: g.g, items: g.items })) : this.evalDef[type]; },
-  /* 지표 이름: 평가 지표 관리에서 바꾼 이름, 없으면 "2027년 BTL 지표" */
+  /* 지표 제목: 평가 지표 관리에서 변경한 제목, 없으면 "2027년 BTL 지표" */
   indName(type, year) { const v = this.indFor(type, year); return v && v.name ? v.name : year + '년 ' + type + ' 지표'; },
   /* 환산 계산식 (v1.3, 2026-11-05): 연도 지표마다 저장. 정량은 식, 정성은 등급별 비율 */
   calcVars: ['소계', '만점', '가점', '배점'],
