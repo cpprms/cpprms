@@ -107,6 +107,7 @@ window.PANEL = (function () {
     const PER = 15, fD = t => t ? new Date(t).toISOString().slice(0, 10) : '-';
     UI.q('#aL').innerHTML += Object.keys(LINES).map(l => '<option>' + l + '</option>').join('');
     UI.q('#aS').innerHTML += Object.keys(ACS).map(s => '<option>' + s + '</option>').join('');
+    let aLast = [];
     accDraw = function () {
       const cnt = (ls, s) => ls.filter(a => a.st === s).length;
       UI.q('#lsum').innerHTML = [''].concat(Object.keys(LINES)).map(l => {
@@ -115,6 +116,7 @@ window.PANEL = (function () {
       }).join('');
       const S = UI.q('#aS').value, P = UI.q('#aP').value, Q = UI.q('#aQ').value.trim();
       const ls = accs.filter(a => (!aLine || a.l === aLine) && (!S || a.st === S) && (!P || (P === 'init') === a.init) && (!Q || a.id.includes(Q)));
+      aLast = ls;
       const pages = Math.max(1, Math.ceil(ls.length / PER)); if (aPage > pages) aPage = pages;
       UI.q('#aN').innerHTML = '전체 <b class="num">' + ls.length + '</b>개';
       UI.q('#ac').innerHTML = '<thead><tr><th>계정</th><th>노선 (SPC)</th><th>상태</th><th>비밀번호</th><th>발급일</th><th>최근 로그인</th><th>이번 달 신고</th><th>누적 신고</th><th>관리</th></tr></thead><tbody>' +
@@ -177,7 +179,8 @@ window.PANEL = (function () {
     const openAcc = e => { const r = e.target.closest('tr[data-ac]'); if (r) accDet(accs.find(a => a.id === r.dataset.ac)); };
     UI.q('#ac').addEventListener('click', openAcc);
     UI.q('#ac').addEventListener('keydown', e => { if (e.key === 'Enter') openAcc(e); });
-    UI.q('#bAccX').onclick = () => UI.toast('계정 목록을 엑셀로 내려받았습니다. 비밀번호는 포함하지 않습니다. (예시)');
+    UI.q('#bAccX').onclick = () => DOC.xlsx([['계정', '노선 (SPC)', '상태', '비밀번호', '발급일', '최근 로그인', '이번 달 신고', '누적 신고']]
+      .concat(aLast.map(a => [a.id, a.l + ' (' + LINES[a.l] + ')', a.st, a.init ? '초기 비밀번호' : '변경 완료', a.issued, a.last ? fT(a.last) : '-', a.mon, a.tot])), '현장체험평가단_계정목록.xlsx', '계정 목록');
     if (manage) UI.q('#bIssue').onclick = () => {
       const last = l => accs.filter(a => a.l === l).length;
       const m = UI.modal({ title: '평가단 계정 추가 발급', width: 480,

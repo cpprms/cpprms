@@ -92,6 +92,7 @@
           let v = f.type === 'file' ? (e.files[0] ? e.files[0].name : '') : e.value.trim();
           if (f.req && !v && !bad) { bad = f; e.classList.add('inv'); }
           out[f.key] = v;
+          if (f.type === 'file') out[f.key + 'File'] = e.files[0] || null; /* 올린 실제 파일(미리보기, 내려받기에 사용) */
         });
         if (bad) { msg.className = 'fmsg err'; msg.textContent = bad.label + '을(를) 입력하세요.'; d.getElementById(bad._id).focus(); return null; }
         return out;
