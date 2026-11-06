@@ -1,9 +1,36 @@
-/* CPPRMS 화면 다듬기 (v1.0, 2026-11-06). ui.css 다음에 읽음, 공통 디자인 조정만 덮어씀
+/* CPPRMS 화면 다듬기 (v2.0, 2026-11-06). ui.css 다음에 읽음, 공통 디자인 조정만 덮어씀
    v1.0 (2026-11-06) 상단 메뉴 폭 맞춤(1440 넘침 해소, 좁은 화면 메뉴 접기), 요약 숫자 칸을 한 줄 띠로 통일,
         조회 조건과 목록을 한 묶음으로, 건수 강조색 정리, 탭 아래 간격, 숫자 자릿수 정렬, 390 폭 배치
-   v1.1 (2026-11-06 2차) 첫 화면 숫자 요약 규칙을 main.jsp 로 옮김 */
+   v1.1 (2026-11-06 2차) 첫 화면 숫자 요약 규칙을 main.jsp 로 옮김
+   v2.0 (2026-11-06 3차) 화면 전체 디자인 기준 정리: 글자 크기 4단계, 굵기 3단계, 파란색 하나, 모서리 6px 하나,
+        버튼 3종(주, 보조, 텍스트)과 선택 상태 구분, 조회 조건 띠 통일, 표 머리와 행, 안내 줄 상자 제거,
+        업무 도우미 버튼 축소, 390 폭에서 표는 표 안에서만 가로 스크롤, 2, 3단 배치 한 줄로, 누르는 칸 44px
+
+   디자인 기준 (v2.0)
+   - 글자 크기: 12 보조(경로, 단위, 칩, 상태) / 13 본문(표, 입력, 버튼) / 15 구역 제목(탭, 카드 제목, 모달 제목) / 24 화면 제목과 요약 숫자
+   - 굵기: 400 본문 / 600 라벨, 표 머리, 버튼, 상태 / 700 제목, 숫자
+   - 색: 글자 3단(ink, sub, gray), 선 2단(line, line2), 파란색 1개(blue), 상태 3색(ok, warn, bad). 남색(navy)은 표 머리 윗선에만
+   - 모서리: 6px 하나 (원형 아이콘 단추와 알림 숫자 제외)
+   - 그림자: 모달, 알림, 팝업, 업무 도우미처럼 떠 있는 요소에만
+   - 버튼: 주(파란 채움, 실행 1개) / 보조(흰 바탕 회색 선) / 텍스트(파란 글자). 선택 상태(구간, 탭, 쪽 번호)는 채우지 않고 옅은 파랑 바탕
+   - 높이: 버튼, 입력 32px, 표 안 작은 버튼 28px, 표 행 40px 안팎. 390 폭에서는 누르는 칸 44px */
+
+/* 0. 기준값 */
+:root{
+  --ink:#1b2330;--sub:#4a5568;--gray:#636b78;
+  --line:#e3e7ee;--line2:#d3d9e2;--bg:#f4f5f7;--tint:#f7f8fa;
+  --blue:#1f3f99;--blue2:#1f3f99;--blueH:#172f78;--tintB:#edf1fa;--navy:#1b2b44;
+  --ok:#1d7a46;--warn:#9a5800;--bad:#b42318;
+  --r:6px
+}
+body{font-size:13px;line-height:1.5;background:var(--bg);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1600px;margin-bottom:72px}
 
 /* 1. 상단 메뉴: 1440 폭에서 오른쪽 링크가 잘리지 않게 메뉴 칸 폭 조정 */
+.gm .d1{font-weight:700}
+.gm .d2 a{font-size:13px;border-radius:var(--r)}
+.gm .d2 a.on{font-weight:700}
+.ptg{border-radius:var(--r);font-weight:600;font-size:12px}
 @media (max-width:1520px){
   .gm li{width:138px}
   .gm .d2{left:-12px;right:-12px}
@@ -20,63 +47,230 @@
   .gnb .usr{margin-left:auto}
 }
 @media (max-width:640px){
-  .gnb{padding:0 14px;gap:10px}
-  .gnb .usr{gap:8px}
+  .gnb{padding:0 12px;gap:8px}
+  .gnb .usr{gap:4px}
   .gnb .who,.gnb .usr a:nth-last-of-type(2){display:none}
-  .ptg{font-size:0;gap:0;padding:0 7px}
+  .ptg{font-size:0;gap:0;padding:0 9px;height:44px;border-color:transparent}
+  .gnb .ib{width:44px;height:44px;border-color:transparent}
+  .gnb .usr a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+  .gnb .brand img{height:22px}
 }
 
-/* 2. 요약 숫자 칸: 칸마다 카드 대신 한 줄 띠 + 1px 구분선 (운영평가 관리, 평가 진행 모니터링, 승하차 등) */
-.kpis{gap:0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+/* 2. 화면 머리: 경로 12, 제목 24, 설명 13, 아래 간격 일정 */
+.phead{padding-top:16px}
+.phead .bc{font-size:12px;color:var(--gray)}
+.phead .bc b{font-weight:600}
+.phead h1{font-size:24px;font-weight:700;line-height:1.3;margin:8px 0 12px;letter-spacing:-.01em}
+.phead .lead{font-size:13px;color:var(--sub);margin:-6px 0 14px}
+.tabs{border-bottom:1px solid var(--line2);gap:4px}
+.tabs button{font-size:15px;font-weight:600;color:var(--gray);padding:10px 14px;border-bottom-width:2px;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{font-weight:700}
+.wrap{margin-top:20px}
+main > .tabs{margin-bottom:16px}
+
+/* 3. 모서리 6px 하나, 그림자는 떠 있는 요소에만 */
+.card,.panel,.kpi,.kpis,.side,.empty-st,.sec,.modal,.mask>.modal,.rsheet,.ptp,.noty,.msr input,
+.wrap .vl li button,.wrap .opc,.wrap .box,.wrap .tot>div,.wrap .share>div,.wrap .sum4 .c,.wrap .ppv,.wrap .pop,.wrap .pvc,
+.wrap .cleg,.wrap .steps .s,.wrap .lockbar,.wrap .rule,.wrap .lockmsg,.wrap .ans,.wrap .vis>div,.wrap .pad,.wrap .ppl,
+.wrap .base,.wrap .tl .why,.wrap .pwbox,.wrap .ph button{border-radius:var(--r)}
+.st,.chip,.tag,.wrap .ev,.wrap .ft,.wrap .sw i,.wrap .k{border-radius:4px}
+.wrap .vl li button.on{box-shadow:inset 3px 0 0 var(--blue)}
+
+/* 4. 구역(카드) 머리: 제목 15 굵게, 보조 설명 12 회색 */
+.card{padding:18px 20px;margin-bottom:16px}
+.wrap .cardh{margin-bottom:12px;min-height:32px}
+.wrap .cardh h2,.wrap .panel h3,.wrap .side h2,.wrap .ph h2,.wrap .cleg h3,.wrap .det h3,.wrap .calbar h2,
+.wrap .fbbar h2,.wrap .cd h4,.wrap .biz h3{font-size:15px;font-weight:700;color:var(--ink)}
+.wrap .cardh .s,.wrap .panel h3 .u{font-size:12px;color:var(--gray);font-weight:400}
+.wrap .cardh .s b{color:var(--ink);font-weight:600}
+.wrap .panel h3 .u{background:none;padding:0}
+.panel{padding:18px 20px}
+.mask>.modal .mh b,.modal .mh b,.pop .ph b,.rtool .rt{font-size:15px;font-weight:700}
+
+/* 5. 버튼: 주(채움) / 보조(흰 바탕) / 텍스트, 선택 상태는 채우지 않음 */
+.btn{height:32px;border-radius:var(--r);font-size:13px;font-weight:600;color:var(--ink);border-color:var(--line2);white-space:nowrap}
+.btn:hover{background:var(--tint);border-color:#b9c2cf}
+.btn svg{color:var(--sub)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.pri svg{color:#fff}
+.btn.pri:hover{background:var(--blueH);border-color:var(--blueH)}
+.btn.line{border-color:var(--line2);color:var(--blue)}
+.btn.line:hover{border-color:var(--blue)}
+.btn.bad{color:var(--bad);border-color:#e7c3be}
+.btn.bad:hover{background:#fdf3f2}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn:disabled,.btn:disabled:hover{background:#fff;opacity:.45}
+.btn.pri:disabled:hover{background:var(--blue)}
+.lnk{font-size:13px}
+.lnk:hover{color:var(--blue)}
+/* 조회 띠 실행 버튼(qbar .go)과 구간 버튼(.pb, .preset): 실행만 채움 */
+.qbar .go,.wrap .qbar .go{height:32px;background:var(--blue);border-radius:var(--r);font-weight:600}
+.qbar .go:hover{background:var(--blueH)}
+.qbar .pb,.qbar .preset button{height:32px;border:1px solid var(--line2);background:#fff;color:var(--ink);border-radius:var(--r);font-weight:600}
+.qbar .pb:hover,.qbar .preset button:hover{border-color:#b9c2cf;background:var(--tint)}
+.qbar .pb.on,.qbar .preset button.on{background:var(--tintB);border-color:var(--blue);color:var(--blue);font-weight:700}
+/* 구간 선택(seg), 사업자 선택(orgs), 쪽 번호(pager): 선택은 옅은 파랑 */
+.seg{border-radius:var(--r);border-color:var(--line2)}
+.seg button{height:30px;font-weight:600;color:var(--sub)}
+.seg button.on{background:var(--tintB);color:var(--blue);font-weight:700;box-shadow:inset 0 0 0 1px var(--blue)}
+.wrap .orgs button{height:32px;border-radius:var(--r);font-weight:600;color:var(--ink)}
+.wrap .orgs button.on{background:var(--tintB);border-color:var(--blue);color:var(--blue);font-weight:700}
+.pager{gap:4px;margin-top:16px}
+.pager button{min-width:32px;height:32px;border-radius:var(--r);border-color:var(--line2);color:var(--sub)}
+.pager button:hover{background:var(--tint)}
+.pager button.on{background:var(--tintB);border-color:var(--blue);color:var(--blue);font-weight:700}
+
+/* 6. 입력 칸: 32px, 회색 선, 초점은 파란 테두리 */
+.wrap select,.wrap input[type=text],.wrap input[type=search],.wrap input[type=date],.wrap input[type=number],.wrap input[type=password],.wrap input:not([type]),
+.mask select,.mask input[type=text],.mask input[type=date],.mask input:not([type]){border-radius:var(--r);border-color:var(--line2);font-size:13px;color:var(--ink)}
+.filter select,.filter input,.qbar select,.wrap .flt select,.wrap .flt input[type=search],.wrap .tbar select,.wrap .fbar select,.wrap .calbar select,.side select,.wrap .rt select{height:32px}
+.fgrid input,.fgrid select{height:32px}
+.wrap select:focus-visible,.wrap input:focus-visible,.wrap textarea:focus-visible,.mask input:focus-visible,.mask select:focus-visible,.mask textarea:focus-visible{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+
+/* 7. 조회 조건 띠: 목록에 붙은 조건(lfilter)과 따로 선 조건(qbar)을 같은 모양으로 */
+.card.lfilter{background:var(--tint);padding:12px 20px;margin-bottom:0;border-bottom:0;border-radius:var(--r) var(--r) 0 0}
+.card.lfilter + .card.lbody{border-radius:0 0 var(--r) var(--r);padding-top:14px}
+.filter{gap:8px 20px}
+.filter label,.qbar label,.wrap .tbar label,.wrap .ctxbar label{font-weight:600;color:var(--sub);font-size:13px;margin-right:6px}
+.filter .btn.pri{margin-left:4px}
+.qbar{background:var(--tint);border:1px solid var(--line);border-radius:var(--r);padding:12px 20px;margin-bottom:16px;gap:8px 12px}
+.qbar .qm,.qbar .pmsg,.pmsg{font-size:12px}
+
+/* 8. 요약 숫자 띠: 칸마다 카드 대신 한 줄 띠 + 1px 구분선, 숫자 24 */
+.kpis{gap:0;background:#fff;border:1px solid var(--line);overflow:hidden;margin-bottom:16px}
 .kpis .kpi{border:0;border-left:1px solid var(--line);border-radius:0;padding:16px 20px}
 .kpis .kpi:first-child{border-left:0}
 .kpi .ic{display:none}
-.kpi .l{font-size:13px;color:var(--sub)}
-.kpi .v{font-size:24px;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.25;margin-top:4px}
-.kpi .v small{margin-left:2px}
-
-/* 첫 화면(main.jsp) 머리, 숫자 요약은 main.jsp 안 스타일로 이관 (v1.1) */
-
+.kpi .l{font-size:12px;color:var(--sub);font-weight:600}
+.kpi .v{font-size:24px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.25;margin-top:4px}
+.kpi .v small{font-size:12px;font-weight:600;color:var(--sub);margin-left:2px}
+.kpi .s{font-size:12px;color:var(--gray)}
+.kpi .s .up,.kpi .s b{color:var(--ink);font-weight:600}
 /* 사용자 관리 상태 칸: 같은 띠 모양 */
-main .sumrow{display:inline-flex;gap:0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;max-width:100%}
+main .sumrow{display:inline-flex;gap:0;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;max-width:100%;margin-bottom:16px}
 main .sumrow button{border:0;border-left:1px solid var(--line);border-radius:0;min-width:140px;padding:12px 20px}
 main .sumrow button:first-child{border-left:0}
 main .sumrow button:hover{background:var(--tint)}
 main .sumrow button:focus-visible{outline-offset:-2px}
-main .sumrow span{font-size:13px;color:var(--sub)}
+main .sumrow span{font-size:12px;color:var(--sub);font-weight:600}
+main .sumrow b{font-size:24px;font-weight:700;color:var(--ink);line-height:1.25}
+main .sumrow button.warn b{color:var(--warn)}
+/* 화면별 요약 칸(통계지표 대시보드, 운영평가 입력, 승하차): 숫자 24, 제목 12 */
+.wrap .sum4 .c{padding:16px 18px}
+.wrap .sum4 .h{font-size:12px;font-weight:600;color:var(--sub)}
+.wrap .sum4 .h small{font-size:12px;font-weight:400}
+.wrap .sum4 .v{font-size:24px;font-weight:700;color:var(--ink)}
+.wrap .sum4 .v small,.wrap .share small,.wrap .tot .v small{font-size:12px;font-weight:600}
+.wrap .vis b{font-size:15px;font-weight:700;color:var(--ink)}
+.wrap .vis>div,.wrap .sum4 .ln,.wrap .sleg{font-size:12px}
+.wrap .share .l,.wrap .tot .l,.wrap .pvk .l{font-size:12px;font-weight:600;color:var(--sub)}
+.wrap .share .p,.wrap .tot .v{font-size:24px;font-weight:700;color:var(--ink)}
+.wrap .tot>div{background:#fff}
+.wrap .pvk .v{font-size:15px;font-weight:700;color:var(--ink)}
+.wrap .stnnav b{font-size:15px}
 
-/* 3. 조회 조건과 목록을 한 묶음으로: 조건은 옅은 바탕 띠, 바로 아래 목록 */
-.card.lfilter{background:var(--tint);padding:12px 18px;margin-bottom:0;border-bottom:0;border-radius:10px 10px 0 0}
-.card.lfilter + .card.lbody{border-radius:0 0 10px 10px}
-.filter{gap:8px 18px}
-.filter label{margin-right:6px}
-.filter .btn.pri{margin-left:4px}
+/* 9. 안내 줄(기준일, 자료 출처): 상자 대신 보조 글자 한 줄 */
+.basis,.wrap .base{background:none;border:0;padding:0;margin:0 0 12px;font-size:12px;color:var(--gray);line-height:1.6}
+.basis b,.wrap .base b{color:var(--sub);font-weight:600}
 
-/* 4. 목록 머리와 건수: 건수는 주황 대신 기본 글자색, 숫자 자릿수 정렬 */
-.total b{color:var(--navy)}
-.lbar{min-height:34px}
-.lst td,.mx td,.dt td{font-variant-numeric:tabular-nums}
-.lst thead th{font-weight:700}
-.lst .empty td{padding:40px 10px;font-size:13.5px}
-.btn{white-space:nowrap}
+/* 10. 표: 머리는 옅은 바탕 + 남색 윗선 2px, 머리 글자 600, 행 높이 40 안팎 */
+.total{font-size:13px;color:var(--sub)}
+.total b{color:var(--ink);font-weight:700}
+.lbar{min-height:34px;margin:0 0 12px}
+.lst td,.mx td,.dt td,.wrap .rt td,.wrap .ot td,.wrap .mt td,.wrap .rk td{font-variant-numeric:tabular-nums}
+body .wrap table th,body .mask table th{font-weight:600}
+.lst th,.lst td{padding:10px 10px;font-size:13px}
+.lst thead th{color:var(--sub);background:var(--tint);border-top:2px solid var(--navy);border-bottom:1px solid var(--line2)}
+.lst tbody tr:hover td{background:#f9fafc}
+.lst tbody tr.sel td{background:var(--tintB)}
+.lst td .sub2{font-size:12px;color:var(--gray);font-weight:400}
+.lst td.tt a,.lnk{font-weight:600}
+.lst .empty td{padding:48px 10px;font-size:13px;color:var(--gray)}
+.mx th,.dt th,.wrap .mt thead th,.wrap .qa th,.wrap .info th,.meta th{color:var(--sub);font-weight:600}
+.wrap .rt thead th,.wrap .rk thead th,.wrap .ot thead th{font-weight:600;font-size:13px;color:var(--sub)}
+.wrap .rt td.g,.wrap .it td.g,.wrap .ftg td.gg,.mx td.cnt,.dt tr.tot td,.wrap .rt tr.tot td,.wrap .it tr.sum td{color:var(--ink);font-weight:700}
+.dt th,.dt td{font-size:13px}
+.wrap .rt thead th small{font-size:12px;font-weight:400}
 
-/* 5. 본문 안에 놓인 탭: 아래 내용과 붙지 않게 */
-main > .tabs{margin-bottom:16px}
+/* 11. 상태와 칩: 글자 12, 굵기 600, 점 + 글자 병기 유지 */
+.st{font-size:12px;font-weight:600;padding:2px 8px}
+.st.ing{background:var(--tintB);color:var(--blue)}
+.st.warn{background:#fff3df;color:var(--warn)}
+.chip,.tag{font-size:12px;font-weight:600}
+.wrap .ev{font-size:12px}
+.wrap .biz .tag.main{color:var(--blue);background:var(--tintB);border-color:#c8d3ee}
 
-/* 6. 좁은 화면(태블릿, 휴대폰): 칸 나눔을 한 줄로, 표는 표 안에서만 가로 스크롤 */
+/* 12. 진행률 막대와 선택 표시: 파란색 하나 */
+.pbar i b,.wrap .rate i b,.wrap .share .bar i{background:var(--blue)}
+.pbar span{font-size:12px;font-weight:600}
+.lst input[type=checkbox],.wrap input[type=checkbox],.mask input[type=checkbox]{accent-color:var(--blue)}
+
+/* 13. 왼쪽 목록(업무그룹, 연도별 지표, 사업자 목록) */
+.side{padding:16px}
+.side h2{margin-bottom:12px}
+.side li button{font-size:13px;padding:8px 10px;border-radius:var(--r)}
+.side li button.on{background:var(--tintB);color:var(--blue);font-weight:700}
+.side li button .n,.side li button small{font-size:12px}
+.wrap .vl b{font-size:15px;font-weight:700}
+.wrap .vl small{font-size:12px}
+
+/* 14. 화면별 글자 크기 맞춤(15, 13, 12 단계로) */
+.wrap .opc .h{font-size:13px;font-weight:700}
+.wrap .opc dl,.wrap .opc p,.wrap .box,.detail-body{font-size:13px}
+.wrap .opc dt{font-weight:600}
+.wrap .box b{font-size:12px;font-weight:600}
+.wrap .det .sub,.wrap .note:not(textarea),.wrap .ph0,.wrap .chint,.wrap .ct,.wrap .fxr,.wrap .pcnt,.wrap .cleg p,.wrap .hist,.wrap .savebar .m,.wrap .ovl,.wrap .rule,.wrap .tl .why,.wrap .tl .fn,.wrap .pvb{font-size:12px}
+.wrap .fg label,.wrap .sc-grid label,.wrap .nlab,.wrap .fxw .l,.fgrid label{font-size:12px;font-weight:600;color:var(--sub)}
+.wrap .fg input,.wrap .fg select,.wrap .sc-grid input,.wrap .sc-grid select{height:32px;font-size:13px}
+.wrap .ctxbar select{height:32px;font-size:13px;font-weight:600}
+.wrap .dsc .dh{font-size:13px}
+.wrap .dsc textarea,.wrap .ppl label{font-size:13px}
+.wrap .wk .e{font-size:13px}
+.wrap .calbar h2{min-width:110px}
+.wrap .cal th{font-size:12px;font-weight:600}
+.wrap .nomsg{font-size:13px}
+.wrap .nomsg b{font-size:15px}
+.wrap .pvh b{font-size:15px}
+.wrap .pvh .tg span,.wrap .pvk .l{font-size:12px}
+.wrap .ev .k{font-size:11px}
+.wrap .leg,.wrap .hmleg{font-size:12px}
+.wrap .steps .s{font-size:13px}
+.wrap .vis>div{font-size:12px}
+.wrap .info th,.wrap .info td,.wrap .meta th,.wrap .meta td{font-size:13px}
+
+/* 15. 업무 도우미 버튼: 표 끝 열을 덜 가리게 작게, 모서리 6px */
+body .bfab{height:40px;padding:0 14px 0 12px;border-radius:var(--r);font-size:13px;font-weight:600;box-shadow:0 4px 14px rgba(15,25,45,.18);gap:6px}
+body .bfab svg{width:18px;height:18px}
+body .bpan{border-radius:var(--r)}
+body .bm,body .bform input,body .bform button{border-radius:var(--r)}
+body .bchips button{border-radius:var(--r)}
+
+/* 16. 좁은 화면(태블릿, 휴대폰) */
+@media (max-width:1100px){
+  .wrap .g31,.wrap .g21,.wrap .g2r,.wrap .bz,.wrap .pe,.wrap .iv,.wrap .sd{grid-template-columns:minmax(0,1fr)}
+  .wrap .pv{position:static}
+}
 @media (max-width:860px){
   .phead{padding:12px 16px 0}
-  .phead h1{font-size:21px;margin:8px 0 10px}
+  .phead h1{font-size:24px;margin:6px 0 10px}
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tabs button{white-space:nowrap;padding:10px 12px}
   .wrap{padding:0 16px;margin-top:16px}
+  .card,.panel{padding:16px}
+  .card.lfilter{padding:12px 16px}
+  .qbar{padding:12px 16px}
   .kpis{grid-template-columns:1fr 1fr!important}
   .kpis .kpi:nth-child(odd){border-left:0}
   .kpis .kpi:nth-child(n+3){border-top:1px solid var(--line)}
   .kpis .kpi{padding:14px 16px}
-  .kpi .v{font-size:20px}
-  main .row.r21,.grid2,main .split{grid-template-columns:minmax(0,1fr)}
+  .kpi .v{font-size:24px}
+  main .row.r21,.grid2,main .split,.wrap .split{grid-template-columns:minmax(0,1fr)}
   main .sec{padding:16px}
   .panel{overflow-x:auto}
   .lbar,.lbar .r{flex-wrap:wrap}
+  .lbar .r{margin-left:0;width:100%}
+  .filter{gap:8px 12px}
   .filter input{width:100%}
   .fgrid{grid-template-columns:minmax(0,1fr)}
   .fgrid label{padding-top:0}
@@ -84,15 +278,39 @@ main > .tabs{margin-bottom:16px}
   main .sumrow button{min-width:0}
   main .sumrow button:nth-child(odd){border-left:0}
   main .sumrow button:nth-child(n+3){border-top:1px solid var(--line)}
-  /* 화면별 2, 3단 배치(운영현황 대시보드, 결과조회, 통계지표 대시보드) */
-  .g31,.g2r,.sd{grid-template-columns:minmax(0,1fr)}
-  .sum4{grid-template-columns:1fr 1fr}
-  .sum4>*,.vis>*,.share>*{min-width:0}
-  .vis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  /* 화면별 2, 3단 배치(운영현황 대시보드, 결과조회, 결과 분석, 통계지표 대시보드, 지표 관리, 사업 및 시설물, 팝업, 실시협약) */
+  .wrap .g31,.wrap .g21,.wrap .g2r,.wrap .sd,.wrap .bz,.wrap .pe,.wrap .iv,.wrap .cd,.wrap .pv{grid-template-columns:minmax(0,1fr)}
+  .wrap .sum4{grid-template-columns:1fr 1fr}
+  .wrap .sum4>*,.wrap .vis>*,.wrap .share>*{min-width:0}
+  .wrap .vis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .wrap .share{grid-template-columns:minmax(0,1fr)}
+  .wrap .fg{grid-template-columns:1fr 1fr}
+  .wrap .sc-grid{grid-template-columns:minmax(0,1fr)}
+  .wrap .cq{grid-template-columns:minmax(0,1fr)}
   main .split.solo{grid-template-columns:minmax(0,1fr)}
+  .wrap .side{position:static;max-height:none}
   .cardh{flex-wrap:wrap}
+  .cardh .r{margin-left:0}
   .lockbar{flex-wrap:wrap}
   .lockbar .st{white-space:normal}
   .card{min-width:0;overflow-x:auto}
   .card select{max-width:100%}
+  .wrap .ctxbar .r{margin-left:0}
+  /* 표: 칸을 억지로 줄여 글자가 한 자씩 꺾이지 않게, 표 안에서만 가로 스크롤 */
+  .dscroll,.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) th,
+  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td{white-space:nowrap}
+  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td.l,
+  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td.tt{white-space:normal;min-width:180px}
+  .wrap table.cal{min-width:640px}
+  .wrap .hm{min-width:640px}
+}
+@media (max-width:640px){
+  /* 누르는 칸 44px (버튼, 입력, 탭, 쪽 번호) */
+  .btn,.btn.sm,.qbar .go,.qbar .pb,.qbar .preset button,.seg button,.pager button,.wrap .orgs button{min-height:44px;height:auto}
+  .wrap select,.wrap input[type=text],.wrap input[type=search],.wrap input[type=date],.wrap input[type=password],.wrap input:not([type]){min-height:44px}
+  .tabs button{min-height:44px}
+  .pager button{min-width:44px}
+  body .bfab{height:44px}
+  .wrap .vl li button,.side li button{min-height:44px}
 }
