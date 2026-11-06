@@ -249,7 +249,7 @@
 
     const fab = d.createElement('button');
     fab.type = 'button'; fab.className = 'bfab'; fab.setAttribute('aria-expanded', 'false'); fab.setAttribute('aria-controls', 'botPanel');
-    fab.innerHTML = ICON + '업무 도우미';
+    fab.innerHTML = ICON + '업무 도우미'; fab.title = '업무 도우미';
     const pan = d.createElement('section');
     pan.id = 'botPanel'; pan.className = 'bpan'; pan.setAttribute('aria-label', '업무 도우미');
     pan.innerHTML = '<header><h2>' + ICON + '업무 도우미</h2><span class="tag">조회 전용</span><button type="button" id="bReset" title="대화 지우기" aria-label="대화 지우기">↺</button><button type="button" id="bX" aria-label="업무 도우미 닫기" style="margin-left:0">×</button></header>' +

@@ -5,11 +5,14 @@
    v2.0 (2026-11-06 3차) 화면 전체 디자인 기준 정리: 글자 크기 4단계, 굵기 3단계, 파란색 하나, 모서리 6px 하나,
         버튼 3종(주, 보조, 텍스트)과 선택 상태 구분, 조회 조건 띠 통일, 표 머리와 행, 안내 줄 상자 제거,
         업무 도우미 버튼 축소, 390 폭에서 표는 표 안에서만 가로 스크롤, 2, 3단 배치 한 줄로, 누르는 칸 44px
+   v2.1 (2026-11-06 4차) 마무리 장치: 화면 머리 흰 띠와 화면 끝까지 닿는 구분선, 경로 첫 칸 집 아이콘, 로고 사이 구분선,
+        탭 아래 선 이동(polish.js), 요약 숫자 1회 올라감(polish.js), 모달 열림과 알림 문구 짧은 움직임, 버튼 색 전환 150ms,
+        빈 목록 아이콘, 입력 칸 테두리 대비 3:1. 움직임 줄이기 설정이면 모두 끔
 
    디자인 기준 (v2.0)
    - 글자 크기: 12 보조(경로, 단위, 칩, 상태) / 13 본문(표, 입력, 버튼) / 15 구역 제목(탭, 카드 제목, 모달 제목) / 24 화면 제목과 요약 숫자
    - 굵기: 400 본문 / 600 라벨, 표 머리, 버튼, 상태 / 700 제목, 숫자
-   - 색: 글자 3단(ink, sub, gray), 선 2단(line, line2), 파란색 1개(blue), 상태 3색(ok, warn, bad). 남색(navy)은 표 머리 윗선에만
+   - 색: 글자 3단(ink, sub, gray), 선 3단(line 구획, line2 버튼, lineF 입력 칸 테두리 3:1), 파란색 1개(blue), 상태 3색(ok, warn, bad). 남색(navy)은 표 머리 윗선에만
    - 모서리: 6px 하나 (원형 아이콘 단추와 알림 숫자 제외)
    - 그림자: 모달, 알림, 팝업, 업무 도우미처럼 떠 있는 요소에만
    - 버튼: 주(파란 채움, 실행 1개) / 보조(흰 바탕 회색 선) / 텍스트(파란 글자). 선택 상태(구간, 탭, 쪽 번호)는 채우지 않고 옅은 파랑 바탕
@@ -21,7 +24,7 @@
   --line:#e3e7ee;--line2:#d3d9e2;--bg:#f4f5f7;--tint:#f7f8fa;
   --blue:#1f3f99;--blue2:#1f3f99;--blueH:#172f78;--tintB:#edf1fa;--navy:#1b2b44;
   --ok:#1d7a46;--warn:#9a5800;--bad:#b42318;
-  --r:6px
+  --lineF:#8a94a0;--r:6px;--ez:cubic-bezier(0.32,0.72,0,1)
 }
 body{font-size:13px;line-height:1.5;background:var(--bg);-webkit-font-smoothing:antialiased}
 .wrap{max-width:1600px;margin-bottom:72px}
@@ -123,7 +126,11 @@ main > .tabs{margin-bottom:16px}
 
 /* 6. 입력 칸: 32px, 회색 선, 초점은 파란 테두리 */
 .wrap select,.wrap input[type=text],.wrap input[type=search],.wrap input[type=date],.wrap input[type=number],.wrap input[type=password],.wrap input:not([type]),
-.mask select,.mask input[type=text],.mask input[type=date],.mask input:not([type]){border-radius:var(--r);border-color:var(--line2);font-size:13px;color:var(--ink)}
+.mask select,.mask input[type=text],.mask input[type=date],.mask input:not([type]),.wrap textarea,.mask textarea,.fgrid input,.fgrid select,.fgrid textarea{border-radius:var(--r);border-color:var(--lineF);font-size:13px;color:var(--ink)}
+.wrap input[readonly],.wrap .it input[readonly]{border-color:var(--line2)}
+.wrap .it input[readonly]{border-color:transparent}
+.wrap .ed input{border-color:transparent}
+.wrap .ed input:hover{border-color:var(--lineF)}
 .filter select,.filter input,.qbar select,.wrap .flt select,.wrap .flt input[type=search],.wrap .tbar select,.wrap .fbar select,.wrap .calbar select,.side select,.wrap .rt select{height:32px}
 .fgrid input,.fgrid select{height:32px}
 .wrap select:focus-visible,.wrap input:focus-visible,.wrap textarea:focus-visible,.mask input:focus-visible,.mask select:focus-visible,.mask textarea:focus-visible{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
@@ -238,10 +245,14 @@ body .wrap table th,body .mask table th{font-weight:600}
 .wrap .steps .s{font-size:13px}
 .wrap .vis>div{font-size:12px}
 .wrap .info th,.wrap .info td,.wrap .meta th,.wrap .meta td{font-size:13px}
+.wrap .side li button small,.wrap .side li button .n,.wrap .side .gh,.wrap .cnts,.wrap .mt td.l small,.wrap .mt .nm,.wrap .opc .h small,.wrap .gr small,
+.wrap .sig small,.wrap .leg .na,.dt .na,.wrap .kd,.wrap .sleg,.wrap .agg th small,.wrap .fxt td small{font-size:12px}
+.wrap .cardh h2[style*="14px"]{font-size:13px!important}
 
 /* 15. 업무 도우미 버튼: 표 끝 열을 덜 가리게 작게, 모서리 6px */
-body .bfab{height:40px;padding:0 14px 0 12px;border-radius:var(--r);font-size:13px;font-weight:600;box-shadow:0 4px 14px rgba(15,25,45,.18);gap:6px}
-body .bfab svg{width:18px;height:18px}
+/* 2026-11-06 업무 도우미: 표 마지막 열을 가리지 않게 동그란 아이콘 단추로 줄임(이름은 화면 읽기와 마우스 설명으로) */
+body .bfab{width:48px;height:48px;padding:0;justify-content:center;border-radius:50%;font-size:0;gap:0;box-shadow:0 4px 14px rgba(15,25,45,.18)}
+body .bfab svg{width:22px;height:22px}
 body .bpan{border-radius:var(--r)}
 body .bm,body .bform input,body .bform button{border-radius:var(--r)}
 body .bchips button{border-radius:var(--r)}
@@ -298,10 +309,8 @@ body .bchips button{border-radius:var(--r)}
   .wrap .ctxbar .r{margin-left:0}
   /* 표: 칸을 억지로 줄여 글자가 한 자씩 꺾이지 않게, 표 안에서만 가로 스크롤 */
   .dscroll,.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) th,
-  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td{white-space:nowrap}
-  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td.l,
-  body .wrap table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) td.tt{white-space:normal;min-width:180px}
+  body .wrap :is(.card,.panel,.dscroll,.tscroll) table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) :is(th,td){white-space:nowrap}
+  body .wrap :is(.card,.panel,.dscroll,.tscroll) table:not(.meta):not(.info):not(.kv):not(.cal):not(.hm) :is(td.l,td.tt){white-space:normal;min-width:180px}
   .wrap table.cal{min-width:640px}
   .wrap .hm{min-width:640px}
 }
@@ -310,7 +319,62 @@ body .bchips button{border-radius:var(--r)}
   .btn,.btn.sm,.qbar .go,.qbar .pb,.qbar .preset button,.seg button,.pager button,.wrap .orgs button{min-height:44px;height:auto}
   .wrap select,.wrap input[type=text],.wrap input[type=search],.wrap input[type=date],.wrap input[type=password],.wrap input:not([type]){min-height:44px}
   .tabs button{min-height:44px}
+  .seg button{white-space:nowrap;padding:0 12px}
   .pager button{min-width:44px}
-  body .bfab{height:44px}
+  body .bfab{width:48px;height:48px}
   .wrap .vl li button,.side li button{min-height:44px}
 }
+
+/* 17. 마무리 장치 (v2.1) */
+/* 화면 머리: 흰 띠 + 화면 끝까지 닿는 1px 구분선. 탭이 있는 화면은 탭이 띠 아래쪽에 붙음 */
+.phead{background:#fff;box-shadow:0 0 0 100vmax #fff,0 1px 0 100vmax var(--line);clip-path:inset(0 -100vmax -1px);padding-bottom:4px}
+.phead:has(.tabs){padding-bottom:0}
+.phead .tabs{border-bottom:0;margin-top:4px}
+.wrap{margin-top:24px}
+/* 경로 첫 칸(홈) 앞 집 아이콘 */
+.phead .bc a:first-child{display:inline-flex;align-items:center;gap:4px}
+.phead .bc a:first-child::before{content:"";width:12px;height:12px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.5 12 3l9 7.5'/%3E%3Cpath d='M5 9.5V21h14V9.5'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.5 12 3l9 7.5'/%3E%3Cpath d='M5 9.5V21h14V9.5'/%3E%3C/svg%3E") center/contain no-repeat}
+/* 상단 메뉴: 로고 사이 구분선, 현재 메뉴 아래 2px 선, 색 전환 */
+.gnb .brand img.koti{padding-left:14px;border-left:1px solid var(--line2);height:30px;box-sizing:border-box;padding-top:6px;padding-bottom:6px}
+.gm .d1{border-bottom-width:2px;transition:color .15s var(--ez),border-color .15s var(--ez)}
+.gm .d1:hover{color:var(--blue)}
+.gm .d2 a{transition:background-color .15s var(--ez),color .15s var(--ez)}
+/* 탭 아래 선: polish.js 가 선택 탭 위치를 넘기면 선이 옆으로 이동 */
+.tabs{position:relative}
+.tabs.pl-bar button.on{border-bottom-color:transparent}
+.tabs.pl-bar::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:var(--tw,0);transform:translateX(var(--tx,0));background:var(--blue);transition:transform .25s var(--ez),width .25s var(--ez);pointer-events:none}
+main > .tabs.pl-bar::after{bottom:-1px}
+.tabs button{transition:color .15s var(--ez)}
+/* 버튼, 선택 칸 색 전환 */
+.btn,.qbar .go,.qbar .pb,.qbar .preset button,.seg button,.pager button,.side li button,.wrap .orgs button,.wrap .vl li button,.lnk,.ib,.ptg{transition:background-color .15s var(--ez),border-color .15s var(--ez),color .15s var(--ez)}
+.lst tbody td{transition:background-color .15s var(--ez)}
+.ib:hover{background:var(--tint)}
+/* 요약 숫자: 자릿수 고정, 글자 간격 조금 좁게 */
+.kpi .v,.wrap .sum4 .v,.wrap .share .p,.wrap .tot .v,main .sumrow b{letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+/* 모달: 열릴 때 바탕은 옅게, 창은 8px 올라오며 나타남 */
+@keyframes plFade{from{opacity:0}to{opacity:1}}
+@keyframes plUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.mask.on{animation:plFade .2s var(--ez)}
+.mask.on>.modal,.mask.on .modal{animation:plUp .24s var(--ez)}
+.rmask.on>.rsheet{animation:plUp .24s var(--ez)}
+/* 알림 문구(토스트): 모서리 6px, 아래에서 짧게 올라옴 */
+#toast{border-radius:var(--r);box-shadow:0 6px 18px rgba(15,25,40,.2);transform:translate(-50%,8px);transition:opacity .2s var(--ez),transform .2s var(--ez);font-weight:600}
+#toast.on{transform:translate(-50%,0)}
+/* 빈 목록: 회색 선 아이콘 + 문구 */
+.lst .empty td::before{content:"";display:block;width:36px;height:36px;margin:0 auto 10px;background:#b3bbc7;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/contain no-repeat}
+.lst .empty:hover td{background:none}
+@media (max-width:860px){
+  .phead{padding-bottom:2px}
+  .phead:has(.tabs){padding-bottom:0}
+  .wrap{margin-top:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .tabs.pl-bar::after,#toast{transition:none}
+  .mask.on,.mask.on>.modal,.mask.on .modal,.rmask.on>.rsheet{animation:none}
+}
+@media print{.phead{box-shadow:none;clip-path:none}}
+
