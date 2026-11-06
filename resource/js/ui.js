@@ -1,6 +1,7 @@
 /* CPPRMS 화면 공통 동작 (v2.0, 2026-11-03)
    상단 메뉴(메뉴 검색, 알림, 개선 포인트), 목록(검색, 쪽 나눔, 선택 삭제, 엑셀), 상세와 등록 모달, 상태 표시
-   예시 자료는 각 화면 안에 있고 브라우저 안에서만 바뀜 */
+   예시 자료는 각 화면 안에 있고 브라우저 안에서만 바뀜
+   2026-11-06: 알림 목록에 읽음 처리, 지우기, 모두 읽음, 모두 지우기 추가(배지는 안 읽은 개수, 상태는 localStorage cpprmsNoti) */
 (function (w) {
   'use strict';
   const d = document;
@@ -286,6 +287,85 @@
   }
   function setPoints(list) { points = list || []; ptRender(); }
 
+  /* 알림 목록 (2026-11-06): 읽음 처리, 지우기. 상태는 이 브라우저에만 저장(cpprmsNoti) */
+  const NOTI = [
+    { id: 'n1', t: '신분당선(정자~광교) 2026년 10월 승하차 자료가 등록되었습니다.', at: '예시, 오늘 09:12', menu: '승하차 데이터 관리' },
+    { id: 'n2', t: '사업일정 "3분기 운영실적 보고" 마감이 3일 남았습니다.', at: '예시, 어제 17:40', menu: '사업일정 관리' },
+    { id: 'n3', t: '대외자료 반출 승인 요청 1건이 있습니다.', at: '예시, 11월 1일', menu: '대외자료 반출 승인' }
+  ];
+  const NOTI_KEY = 'cpprmsNoti';
+  function notyLoad() {
+    try { const s = JSON.parse(localStorage.getItem(NOTI_KEY) || '{}'); return { read: Array.isArray(s.read) ? s.read : [], del: Array.isArray(s.del) ? s.del : [] }; }
+    catch (e) { return { read: [], del: [] }; }
+  }
+  let notyS = notyLoad();
+  function notySave() { try { localStorage.setItem(NOTI_KEY, JSON.stringify(notyS)); } catch (e) { /* 저장 불가 시 이 화면에서만 유지 */ } }
+  const notyList = () => NOTI.filter(x => notyS.del.indexOf(x.id) < 0);
+  const notyUnread = () => notyList().filter(x => notyS.read.indexOf(x.id) < 0).length;
+  function notyRead(id) { if (notyS.read.indexOf(id) < 0) { notyS.read.push(id); notySave(); } }
+  function notyBadge() {
+    const nb = d.getElementById('gNoty'); if (!nb) return;
+    let c = q('.cnt', nb);
+    if (!c) { c = d.createElement('i'); c.className = 'cnt'; nb.appendChild(c); }
+    const k = notyUnread();
+    c.textContent = k; c.hidden = !k;
+    nb.setAttribute('aria-label', k ? '알림, 안 읽은 알림 ' + k + '건' : '알림');
+  }
+  function initNoty() {
+    const nb = d.getElementById('gNoty'); if (!nb) return;
+    nb.setAttribute('aria-expanded', 'false'); nb.setAttribute('aria-controls', 'notyBox');
+    notyBadge();
+    const menuHref = name => { const a = qa('.gm .d2 a').find(x => x.textContent.trim() === name); return a ? a.getAttribute('href') : ''; };
+    let n;
+    const close = back => { if (!n || !n.classList.contains('on')) return; n.classList.remove('on'); nb.setAttribute('aria-expanded', 'false'); if (back) nb.focus(); };
+    const draw = focusIdx => {
+      const L = notyList(), k = notyUnread();
+      n.innerHTML = '<div class="nh"><h2>알림' + (k ? ' <span>' + k + '</span>' : '') + '</h2>' +
+        (k ? '<button type="button" class="nlk" data-act="readAll">모두 읽음</button>' : '') + '</div>' +
+        (L.length ? '<ul>' + L.map(x => {
+          const un = notyS.read.indexOf(x.id) < 0, h = menuHref(x.menu);
+          const body = '<span class="tx">' + esc(x.t) + '</span><small>' + (un ? '안 읽음, ' : '') + esc(x.at) + '</small>';
+          return '<li class="' + (un ? 'un' : '') + '" data-id="' + x.id + '">' +
+            (h ? '<a class="nb" href="' + esc(h) + '">' + body + '</a>' : '<button type="button" class="nb">' + body + '</button>') +
+            '<button type="button" class="ndel" aria-label="이 알림 지우기" title="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>';
+        }).join('') + '</ul>' + '<div class="nf"><button type="button" class="nlk" data-act="delAll">모두 지우기</button></div>'
+          : '<p class="nemp">새 알림이 없습니다.</p>');
+      notyBadge();
+      if (focusIdx != null) {
+        const items = qa('li .nb', n);
+        const t = items[Math.min(focusIdx, items.length - 1)] || q('.nlk', n) || q('.nemp', n);
+        if (t) { if (t.classList.contains('nemp')) t.tabIndex = -1; t.focus(); }
+      }
+    };
+    nb.onclick = e => {
+      e.stopPropagation();
+      if (!n) {
+        n = d.createElement('div'); n.id = 'notyBox'; n.className = 'noty'; n.setAttribute('role', 'region'); n.setAttribute('aria-label', '알림');
+        d.body.appendChild(n);
+        /* 바깥을 누르면 닫힘. 확인 창 안 클릭과 지워진 항목 클릭은 제외 */
+        d.addEventListener('click', ev => { if (!ev.target.isConnected || n.contains(ev.target) || ev.target.closest('.mask') || ev.target.closest('#gNoty')) return; close(false); });
+        d.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !d.querySelector('.mask.on') && n.classList.contains('on')) close(true); });
+        n.addEventListener('click', ev => {
+          const act = ev.target.closest('[data-act]'), li = ev.target.closest('li[data-id]');
+          if (act && act.dataset.act === 'readAll') { notyList().forEach(x => notyRead(x.id)); draw(0); return; }
+          if (act && act.dataset.act === 'delAll') {
+            modal({ title: '확인', width: 420, body: '<p style="margin:4px 0;font-size:14px;line-height:1.6">알림 ' + notyList().length + '건을 모두 지웁니다.</p>',
+              buttons: [{ t: '취소' }, { t: '모두 지우기', cls: 'pri', fn: () => { notyList().forEach(x => notyS.del.push(x.id)); notySave(); draw(); toast('알림을 모두 지웠습니다.'); } }],
+              onClose: () => { const t = q('.nemp', n) || q('[data-act=delAll]', n); if (t) { if (t.classList.contains('nemp')) t.tabIndex = -1; t.focus(); } } });
+            return;
+          }
+          if (!li) return;
+          const id = li.dataset.id, idx = qa('li[data-id]', n).indexOf(li);
+          if (ev.target.closest('.ndel')) { notyS.del.push(id); notySave(); draw(idx); toast('알림을 지웠습니다.'); return; }
+          if (ev.target.closest('.nb')) { notyRead(id); if (ev.target.closest('a.nb')) return; draw(idx); }
+        });
+      }
+      if (n.classList.contains('on')) { close(false); return; }
+      draw(); n.classList.add('on'); nb.setAttribute('aria-expanded', 'true');
+      const f = q('li .nb', n) || q('.nlk', n); if (f) f.focus();
+    };
+  }
+
   /* 상단 메뉴 동작 */
   function initGnb() {
     const tg = d.getElementById('ptToggle');
@@ -301,21 +381,7 @@
       inp.onkeydown = e => { if (e.key === 'Enter') { const a = q('a', ul); if (a) location.href = a.href; } };
       modal({ title: '메뉴 검색', width: 520, body: box, buttons: [] });
     };
-    const nb = d.getElementById('gNoty');
-    if (nb) nb.onclick = e => {
-      e.stopPropagation();
-      let n = d.getElementById('notyBox');
-      if (!n) {
-        n = d.createElement('div'); n.id = 'notyBox'; n.className = 'noty';
-        n.innerHTML = '<h2>알림</h2><ul>' +
-          '<li>신분당선(정자~광교) 2026년 10월 승하차 자료가 등록되었습니다.<small>예시, 오늘 09:12</small></li>' +
-          '<li>사업일정 "3분기 운영실적 보고" 마감이 3일 남았습니다.<small>예시, 어제 17:40</small></li>' +
-          '<li>대외자료 반출 승인 요청 1건이 있습니다.<small>예시, 11월 1일</small></li></ul>';
-        d.body.appendChild(n);
-        d.addEventListener('click', ev => { if (!n.contains(ev.target)) n.classList.remove('on'); });
-      }
-      n.classList.toggle('on');
-    };
+    initNoty();
     let rt; const later = () => { clearTimeout(rt); rt = setTimeout(() => { if (ptOn() && points.length) ptRender(); }, 150); };
     w.addEventListener('resize', later);
     /* 자료를 늦게 불러오는 화면: 본문 높이가 바뀌면 번호 위치 다시 계산 */

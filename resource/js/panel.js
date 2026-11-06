@@ -1,4 +1,5 @@
-/* 현장체험평가단 공통 (v1.0, 2026-11-04) 화면 개선안, 예시 자료
+/* 현장체험평가단 공통 (v1.1, 2026-11-06) 화면 개선안, 예시 자료
+   v1.1 (2026-11-06): 평가단 앱 실시간 연동용. setLive(true)면 기한 계산에 현재 시각 사용, 모르는 상태나 유형이 와도 오류 없이 표시('신고'는 조치 대기)
    - 예시 신고, 처리 기한 규칙(시제품 v4.1과 같음), 평가단 계정 목록과 관리
    - 운영평가 > 현장체험평가단 관리: 신고 처리 + 계정 조회 (PANEL.mountAcc(sel, { manage: false }))
    - 운영관리시스템 관리 > 사용자 관리 > 현장체험평가단 탭: 계정 관리 (manage: true)
@@ -33,7 +34,7 @@ window.PANEL = (function () {
   const E = UI.esc, H = 3600e3, NOW = new Date('2026-11-03T09:00:00').getTime();
   const LINES = { '서해선': '이레일', '신분당선': '신분당선', '공항철도': '공항철도', 'GTX-A': '에스지레일' };
   const CATS = { '안전': [0, '6, 9번'], '역무원 부재': [0, '3번'], '비상호출벨 응답': [0, '4번'], '교통약자 이동편의시설': [3, '6번'], '역사 편의시설': [3, '6번'], '열차 운행 및 안내': [3, '7번'], '기타': [3, '5번'] };
-  const STN = { '접수': ['조치 대기', 'warn'], '조치중': ['조치 중', 'ing'], '조치완료': ['확인 대기', 'warn'], '재조치': ['재조치', 'bad'], '확인완료': ['종결 대기', 'ing'], '종결': ['종결', 'done'], '반려': ['평가 제외', 'wait'] };
+  const STN = { '신고': ['조치 대기', 'warn'], '접수': ['조치 대기', 'warn'], '조치중': ['조치 중', 'ing'], '조치완료': ['확인 대기', 'warn'], '재조치': ['재조치', 'bad'], '확인완료': ['종결 대기', 'ing'], '종결': ['종결', 'done'], '반려': ['평가 제외', 'wait'] };
   const REJECTS = ['평가 대상 외 (단순 청소, 분실물, 문의 등)', '중복 신고', '내용 확인 불가 (사진, 위치 불명확)', 'SPC 이의 제기 인정 (타 기관 관리 시설 등)'];
   /* 예시 신고: [번호, 노선, 역, 위치, 유형, 신고 시각(기준 몇 시간 전), 상태, 평가단, 내용, 조치 완료(몇 시간 전), 조치 내용, 현장 확인, 추가 정보] */
   const R = [
@@ -67,13 +68,17 @@ window.PANEL = (function () {
     if (e.status === '반려') h(e.rep + 5 * H, '센터', '평가 제외 (' + e.reject + ')');
     return e;
   });
-  const due = e => { const d = new Date(e.rep); if (CATS[e.cat][0] === 0) { d.setHours(23, 59, 59, 999); return d.getTime(); } return e.rep + 72 * H; };
+  /* 연동 중(live)에는 현재 시각, 예시 자료는 기준 시각(NOW) */
+  let LIVE = false;
+  const now = () => LIVE ? Date.now() : NOW;
+  const catOf = c => CATS[c] || CATS['기타'];
+  const due = e => { const d = new Date(e.rep); if (catOf(e.cat)[0] === 0) { d.setHours(23, 59, 59, 999); return d.getTime(); } return e.rep + 72 * H; };
   const isOpen = e => !['종결', '반려', '확인완료'].includes(e.status);
-  const endOf = e => (e.done && ['조치완료', '확인완료', '종결'].includes(e.status)) ? e.done : NOW;
+  const endOf = e => (e.done && ['조치완료', '확인완료', '종결'].includes(e.status)) ? e.done : now();
   const isLate = e => e.status !== '반려' && endOf(e) > due(e);
   const fT = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
   const fS = h => h == null ? '-' : h < 24 ? Math.max(1, Math.round(h)) + '시간' : (h / 24).toFixed(1) + '일';
-  const stOf = e => UI.st(STN[e.status][0], STN[e.status][1]);
+  const stOf = e => { const s = STN[e.status] || [e.status || '-', 'wait']; return UI.st(s[0], s[1]); };
   let accDraw = function () {};
   function mountAcc(sel, opt) {
     opt = opt || {};
@@ -202,5 +207,6 @@ window.PANEL = (function () {
     const hid = decodeURIComponent((location.hash.match(/panel=([^&]+)/) || [])[1] || ''), ha = accs.find(a => a.id === hid);
     if (ha) { aLine = ha.l; UI.q('#aL').value = ha.l; UI.q('#aQ').value = ha.id.split('-').pop(); accDraw(); accDet(ha); }
   }
-  return { E: E, H: H, NOW: NOW, LINES: LINES, CATS: CATS, STN: STN, REJECTS: REJECTS, ev: ev, due: due, isOpen: isOpen, isLate: isLate, fT: fT, fS: fS, stOf: stOf, mountAcc: mountAcc, redraw: function () { accDraw(); } };
+  return { E: E, H: H, NOW: NOW, LINES: LINES, CATS: CATS, STN: STN, REJECTS: REJECTS, ev: ev, due: due, isOpen: isOpen, isLate: isLate, fT: fT, fS: fS, stOf: stOf, catOf: catOf, now: now,
+    setLive: function (v) { LIVE = !!v; }, mountAcc: mountAcc, redraw: function () { accDraw(); } };
 })();
