@@ -6,7 +6,10 @@
   let seq = Math.max.apply(null, D['/rideMng/dataList.json'].map(p => p.dataId)) + 1;
   const ok = o => Promise.resolve(new Response(JSON.stringify(o), { status: 200, headers: { 'Content-Type': 'application/json' } }));
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const _fetch = window.fetch.bind(window);
   window.fetch = function (url, opt) {
+    const u = String(url && url.url ? url.url : url);
+    if (/^https?:/i.test(u) && u.indexOf(location.origin) !== 0) return _fetch(url, opt);   /* 외부 주소(Firebase 등)는 그대로 통과 (2026-11-06) */
     const k = key(url);
     if (opt && opt.method === 'POST') {
       const b = opt.body;
