@@ -1,7 +1,8 @@
 /* CPPRMS 화면 공통 동작 (v2.0, 2026-11-03)
    상단 메뉴(메뉴 검색, 알림, 개선 포인트), 목록(검색, 쪽 나눔, 선택 삭제, 엑셀), 상세와 등록 모달, 상태 표시
    예시 자료는 각 화면 안에 있고 브라우저 안에서만 바뀜
-   2026-11-06: 알림 목록에 읽음 처리, 지우기, 모두 읽음, 모두 지우기 추가(배지는 안 읽은 개수, 상태는 localStorage cpprmsNoti) */
+   2026-11-06: 알림 목록에 읽음 처리, 지우기, 모두 읽음, 모두 지우기 추가(배지는 안 읽은 개수, 상태는 localStorage cpprmsNoti)
+   v2.1 2026-11-06: 목록에 저장 연결 추가(add.submit, onDel, setRows, openAdd 제목 바꾸기). 홈페이지 관리 화면이 DB 또는 공용 저장소에 저장할 때 사용 */
 (function (w) {
   'use strict';
   const d = document;
@@ -134,7 +135,7 @@
 
     const tb = q('tbody', root), pager = q('.pager', root), totalEl = q('.total b', root), chkAll = q('thead input', root);
 
-    function apply() {
+    function apply(keep) {
       view = rows.filter(r => (cfg.filters || []).every(f => {
         const v = d.getElementById(f._id).value.trim();
         if (!v) return true;
@@ -142,7 +143,8 @@
         const keys = f.fields || [f.key];
         return keys.some(k => String(r[k] == null ? '' : r[k]).toLowerCase().includes(v.toLowerCase()));
       }));
-      page = 1; render();
+      if (keep !== true) page = 1;
+      render();
     }
 
     function cell(c, r) {
@@ -183,14 +185,15 @@
       modal({ title: dc.title ? dc.title(r) : '상세 보기', width: dc.width || 720, body: body, buttons: b });
     }
 
-    function openAdd(init) {
-      const a = cfg.add;
+    function openAdd(init, over) {
+      const a = Object.assign({}, cfg.add, over || {});
       const fm = form(a.fields, init);
       modal({
         title: a.title || '등록', width: a.width || 640, body: fm.el,
         buttons: [{ t: '취소' }, {
           t: '저장', cls: 'pri', fn: () => {
             const v = fm.read(); if (!v) return false;
+            if (a.submit) return a.submit(v);   /* 저장을 화면이 맡음(서버 또는 공용 저장소) */
             const r = a.make ? a.make(v) : v;
             r._k = ++seq; rows.unshift(r); sel.clear(); apply();
             toast(a.done || '등록했습니다.');
@@ -209,6 +212,7 @@
         else if (k === 'del') {
           if (!sel.size) { toast('삭제할 항목을 먼저 선택하세요.'); return; }
           confirmBox('선택한 ' + sel.size + '건을 삭제합니다. 삭제 후에는 되돌릴 수 없습니다.', () => {
+            if (cfg.onDel) { const gone = rows.filter(r => sel.has(r._k)); sel.clear(); cfg.onDel(gone, api); return; }
             rows = rows.filter(r => !sel.has(r._k)); const n = sel.size; sel.clear(); apply(); toast(n + '건을 삭제했습니다.');
           });
         } else if (k === 'excel') excel(cfg.excelName || d.title, cfg.cols.filter(c => !c.noExcel), view);
@@ -234,6 +238,7 @@
       update(r) { render(); return r; },
       remove(r) { rows = rows.filter(x => x !== r); apply(); },
       add(r) { r._k = ++seq; rows.unshift(r); apply(); },
+      setRows(list) { rows = list.slice(); rows.forEach(r => { r._k = ++seq; }); sel.clear(); apply(true); },
       openDetail: openDetail,
       openAdd: openAdd
     };
